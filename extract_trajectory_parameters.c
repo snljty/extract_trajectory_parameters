@@ -7,6 +7,7 @@
 # include <stdlib.h>
 # include <string.h>
 # include <math.h>
+# include <stdbool.h>
 
 # define num_coords 3u
 
@@ -33,6 +34,7 @@ int main(int argc, char const *argv[])
     unsigned int num_paras = 0u;
     char buf[BUFSIZ + 1] = "";
     char *tok = NULL;
+    bool read_indices_from_stdin = false;
     unsigned int const max_num_index = 4u;
     unsigned int **para_index = NULL;
     unsigned int i_para = 0u;
@@ -67,6 +69,9 @@ int main(int argc, char const *argv[])
             puts("");
             puts("All file names that are not provided in the command argument, ");
             puts("will be asked interactively.");
+            puts("If INDEX is \"-\", the program will read indices from STDIN.");
+            puts("In this mode, you need to input the amount of parameters ro be measured first, ");
+            puts("when the screen hints you to do so.");
             puts("");
             puts("Exiting normally.");
             return 0;
@@ -135,29 +140,58 @@ int main(int argc, char const *argv[])
             ++ index_name_use;
         }
     }
-    index_fp = fopen(index_name_use, "rt");
-    if (! index_fp)
+    if (! strncmp(index_name_use, "-", strlen("-") + 1))
     {
-        puts("Error!");
-        perror(index_name_use);
-        exit(1);
+        read_indices_from_stdin = true;
+        puts("# Reading indices from STDIN, please input ...");
+        index_fp = stdin;
+    }
+    else
+    {
+        index_fp = fopen(index_name_use, "rt");
+        if (! index_fp)
+        {
+            puts("Error!");
+            perror(index_name_use);
+            exit(1);
+        }
     }
 
-    /* read indices */
-    while (fgets(buf, BUFSIZ, index_fp))
+    /* get amount of parameters */
+    if (read_indices_from_stdin)
     {
-        tok = strtok(buf, " \n,");
-        if (tok)
-            ++ num_paras;
+        printf("# Input amount of geometry parameters to be measured: ");
+        for (;;)
+        {
+            if (! fgets(buf, BUFSIZ, stdin))
+                exit(1);
+            if (sscanf(buf, "%u", & num_paras) == 1)
+                break;
+        }        
+        printf("# Input %u lines of indices:, one line for one geometry parameter:\n", num_paras);
     }
-    fseek(index_fp, 0, SEEK_SET);
+    else
+    {
+        /* get amount of parameters */
+        while (fgets(buf, BUFSIZ, index_fp))
+        {
+            tok = strtok(buf, " \n,");
+            if (tok)
+                ++ num_paras;
+        }
+        fseek(index_fp, 0, SEEK_SET);
+    }
+
+    /* allocate memory for indices */
     para_index = (unsigned int **)malloc(num_paras * sizeof(unsigned int *));
     * para_index = (unsigned int *)malloc(num_paras * max_num_index * sizeof(unsigned int));
     memset(* para_index, 0, num_paras * max_num_index * sizeof(unsigned int));
     for (i_para = 0; i_para < num_paras; ++ i_para)
         para_index[i_para] = * para_index + i_para * max_num_index;
+
+    /* read indices */
     i_para = 0u;
-    while (fgets(buf, BUFSIZ, index_fp))
+    while (i_para < num_paras && fgets(buf, BUFSIZ, index_fp))
     {
         tok = strtok(buf, " \n,");
         if (tok)
@@ -213,13 +247,15 @@ int main(int argc, char const *argv[])
             }
             /* next line */
             ++ i_para;
-            continue;
         }
     }
 
     /* close index file */
-    fclose(index_fp);
-    index_fp = NULL;
+    if (! read_indices_from_stdin)
+    {
+        fclose(index_fp);
+        index_fp = NULL;
+    }
 
     /* print title line of output parameters */
     puts("# bond lengthes in input unit, angles and dihedrals in unit degree.");
@@ -455,7 +491,7 @@ double Get_distance(double const *a, double const *b)
 {
     double tmp[num_coords] = {0.0};
 
-    Vector_minus(a, b, tmp);
+    Vector_minus(b, a, tmp);
     return Get_vector_length(tmp);
 }
 

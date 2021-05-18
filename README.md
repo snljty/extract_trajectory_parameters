@@ -15,4 +15,7 @@ bond length of these two atoms will be calcualted, with the unit of input,
 
 All file names that are not provided in the command argument, 
 will be asked interactively.
+If INDEX is "-", the program will read indices from STDIN.
+In this mode, you need to input the amount of parameters ro be measured first, 
+when the screen hints you to do so.
 
