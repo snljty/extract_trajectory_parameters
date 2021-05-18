@@ -48,7 +48,7 @@ int main(int argc, char const *argv[])
     unsigned int tmp_uint = 0u;
     char tmp_str[16] = "";
 
-    /* Get file name */
+    /* Get file names and open files */
     iarg = 1;
     while (iarg < argc)
     {
@@ -101,7 +101,8 @@ int main(int argc, char const *argv[])
     if (! * traj_name)
     {
         puts("# Input name of the trajectory file:");
-        fgets(traj_name, BUFSIZ, stdin);
+        if (! fgets(traj_name, BUFSIZ, stdin))
+            exit(1);
         traj_name[strlen(traj_name) - 1] = '\0';
         if (traj_name[0] == '\"')
         {
@@ -115,10 +116,18 @@ int main(int argc, char const *argv[])
         puts("Error! The suffix of a xyz format trajectory file should be \".xyz\".");
         exit(1);
     }
+    traj_fp = fopen(traj_name_use, "rt");
+    if (! traj_fp)
+    {
+        puts("Error!");
+        perror(traj_name_use);
+        exit(1);
+    }
     if (! * index_name)
     {
         puts("# Input name of the index file:");
-        fgets(index_name, BUFSIZ, stdin);
+        if (! fgets(index_name, BUFSIZ, stdin))
+            exit(1);
         index_name[strlen(index_name) - 1] = '\0';
         if (index_name[0] == '\"')
         {
@@ -126,22 +135,15 @@ int main(int argc, char const *argv[])
             ++ index_name_use;
         }
     }
-
-    /* open files */
-    traj_fp = fopen(traj_name_use, "rt");
-    if (! traj_fp)
-    {
-        perror(traj_name_use);
-        exit(1);
-    }
     index_fp = fopen(index_name_use, "rt");
     if (! index_fp)
     {
+        puts("Error!");
         perror(index_name_use);
         exit(1);
     }
 
-    /* read indecies */
+    /* read indices */
     while (fgets(buf, BUFSIZ, index_fp))
     {
         tok = strtok(buf, " \n,");
@@ -492,19 +494,17 @@ void Vector_cross_product(double const *a, double const *b, double *res)
 double Get_dihedral(double const *a, double const *b, double const *c, double const *d)
 {
     double tmp_1[num_coords] = {0.0};
-    double tmp_2_1[num_coords] = {0.0};
-    double tmp_2_3[num_coords] = {0.0};
+    double tmp_2[num_coords] = {0.0};
     double tmp_3[num_coords] = {0.0};
     double tmp_p[num_coords] = {0.0};
     double tmp_q[num_coords] = {0.0};
     double ret = 0.0;
 
     Vector_minus(b, a, tmp_1);
-    Vector_minus(b, c, tmp_2_1);
-    Vector_minus(c, b, tmp_2_3);
+    Vector_minus(b, c, tmp_2);
     Vector_minus(c, d, tmp_3);
-    Vector_cross_product(tmp_1, tmp_2_1, tmp_p);
-    Vector_cross_product(tmp_2_3, tmp_3, tmp_q);
+    Vector_cross_product(tmp_1, tmp_2, tmp_p);
+    Vector_cross_product(tmp_3, tmp_2, tmp_q);
     ret = Get_vector_angle(tmp_p, tmp_q);
     if (Get_dot_product(tmp_p, tmp_3) < 0.0)
         ret = - ret;
