@@ -1,0 +1,29 @@
+# Makefile for extract_trajectory_parameters
+
+SHELL = /bin/bash
+CC = gcc
+CLINKER = $(CC)
+CCFLAGS = -O3
+
+.PHONY: all
+all: extract_trajectory_parameters
+
+.PHONY: extract_trajectory_parameters
+extract_trajectory_parameters: extract_trajectory_parameters.x
+
+extract_trajectory_parameters.x: extract_trajectory_parameters.o
+	@echo linking $@ againgst $^ ...
+	$(CLINKER) -o $@ $^ -lm -static
+
+extract_trajectory_parameters.o: extract_trajectory_parameters.c
+	@echo Compiling $@ ...
+	$(CC) -o $@ -c $< $(CCFLAGS)
+
+.PHONY: clean
+clean: clean_tmp
+	-rm  extract_trajectory_parameters.x 2> /dev/null
+
+.PHONY: clean_tmp
+clean_tmp:
+	-rm  extract_trajectory_parameters.o 2> /dev/null
+

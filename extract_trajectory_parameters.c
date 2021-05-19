@@ -48,7 +48,7 @@ int main(int argc, char const *argv[])
     unsigned int i_frame = 0u;
     double tmp_double = 0.0;
     unsigned int tmp_uint = 0u;
-    char tmp_str[16] = "";
+    char tmp_str[24] = "";
 
     /* Get file names and open files */
     iarg = 1;
@@ -131,6 +131,7 @@ int main(int argc, char const *argv[])
     if (! * index_name)
     {
         puts("# Input name of the index file:");
+        puts("# If you press <Enter> directly, will read indices from STDIN.");
         if (! fgets(index_name, BUFSIZ, stdin))
             exit(1);
         index_name[strlen(index_name) - 1] = '\0';
@@ -140,7 +141,7 @@ int main(int argc, char const *argv[])
             ++ index_name_use;
         }
     }
-    if (! strncmp(index_name_use, "-", strlen("-") + 1))
+    if (! * index_name_use || ! strncmp(index_name_use, "-", strlen("-") + 1))
     {
         read_indices_from_stdin = true;
         puts("# Reading indices from STDIN, please input ...");
@@ -167,8 +168,11 @@ int main(int argc, char const *argv[])
                 exit(1);
             if (sscanf(buf, "%u", & num_paras) == 1)
                 break;
-        }        
-        printf("# Input %u lines of indices:, one line for one geometry parameter:\n", num_paras);
+        }
+        if (num_paras == 1)
+            puts("# Input 1 line of indices:");
+        else
+            printf("# Input %u lines of indices, one line for one geometry parameter:\n", num_paras);
     }
     else
     {
@@ -270,9 +274,9 @@ int main(int argc, char const *argv[])
             sprintf(tmp_str, "%u-%u-%u-%u", para_index[i_para][0], para_index[i_para][1], \
                 para_index[i_para][2], para_index[i_para][3]);
             tmp_uint = strlen(tmp_str);
-            printf("%*s%*s%*s", (15 - tmp_uint) / 2, "", \
+            printf("%*s%*s%*s", (15 - tmp_uint) / 2 >= 0 ? (15 - tmp_uint) / 2 : 0, "", \
                 tmp_uint, tmp_str, \
-                (16 - tmp_uint) / 2, "");
+                (16 - tmp_uint) / 2 >= 0 ? (16 - tmp_uint) / 2 : 0, "");
         }
         else
         {
@@ -282,18 +286,18 @@ int main(int argc, char const *argv[])
                 sprintf(tmp_str, "%u-%u-%u", para_index[i_para][0], \
                     para_index[i_para][1], para_index[i_para][2]);
                 tmp_uint = strlen(tmp_str);
-                printf("%*s%*s%*s", (15 - tmp_uint) / 2, "", \
+                printf("%*s%*s%*s", (15 - tmp_uint) / 2 >= 0 ? (15 - tmp_uint) / 2 : 0, "", \
                     tmp_uint, tmp_str, \
-                    (16 - tmp_uint) / 2, "");
+                    (16 - tmp_uint) / 2 >= 0 ? (16 - tmp_uint) / 2 : 0, "");
             }
             else
             {
                 /* length */
                 sprintf(tmp_str, "%u-%u", para_index[i_para][0], para_index[i_para][1]);
                 tmp_uint = strlen(tmp_str);
-                printf("%*s%*s%*s", (15 - tmp_uint) / 2, "", \
+                printf("%*s%*s%*s", (15 - tmp_uint) / 2 >= 0 ? (15 - tmp_uint) / 2 : 0, "", \
                         tmp_uint, tmp_str, \
-                        (16 - tmp_uint) / 2, "");
+                        (16 - tmp_uint) / 2 >= 0 ? (16 - tmp_uint) / 2 : 0, "");
             }
         }
     }
