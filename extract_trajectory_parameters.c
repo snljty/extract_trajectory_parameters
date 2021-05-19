@@ -12,7 +12,7 @@
 # define num_coords 3u
 
 void Vector_minus(double const *a, double const *b, double *res);
-double Get_dot_product(double const *a, double const *b);
+double Get_vector_dot_product(double const *a, double const *b);
 double Get_vector_length(double const *a);
 double Get_distance(double const *a, double const *b);
 double Get_vector_angle(double const *a, double const *b);
@@ -474,7 +474,7 @@ void Vector_minus(double const *a, double const *b, double *res)
     return;
 }
 
-double Get_dot_product(double const *a, double const *b)
+double Get_vector_dot_product(double const *a, double const *b)
 {
     unsigned int i = 0u;
     double ret = 0.0;
@@ -488,7 +488,7 @@ double Get_dot_product(double const *a, double const *b)
 
 double Get_vector_length(double const *a)
 {
-    return sqrt(Get_dot_product(a, a));
+    return sqrt(Get_vector_dot_product(a, a));
 }
 
 double Get_distance(double const *a, double const *b)
@@ -501,7 +501,7 @@ double Get_distance(double const *a, double const *b)
 
 double Get_vector_angle(double const *a, double const *b)
 {
-    return acos(Get_dot_product(a, b) / (Get_vector_length(a) * Get_vector_length(b))) / M_PI * 180;
+    return acos(Get_vector_dot_product(a, b) / (Get_vector_length(a) * Get_vector_length(b))) / M_PI * 180;
 }
 
 double Get_angle(double const *a, double const *b, double const *c)
@@ -546,7 +546,7 @@ double Get_dihedral(double const *a, double const *b, double const *c, double co
     Vector_cross_product(tmp_1, tmp_2, tmp_p);
     Vector_cross_product(tmp_3, tmp_2, tmp_q);
     ret = Get_vector_angle(tmp_p, tmp_q);
-    if (Get_dot_product(tmp_p, tmp_3) < 0.0)
+    if (Get_vector_dot_product(tmp_p, tmp_3) < 0.0)
         ret = - ret;
 
     return ret;
