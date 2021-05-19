@@ -15,7 +15,7 @@ void Vector_minus(double const *a, double const *b, double *res);
 double Get_dot_product(double const *a, double const *b);
 double Get_vector_length(double const *a);
 double Get_distance(double const *a, double const *b);
-double Get_vector_angle(double const *p, double const *q);
+double Get_vector_angle(double const *a, double const *b);
 double Get_angle(double const *a, double const *b, double const *c);
 void Vector_cross_product(double const *a, double const *b, double *res);
 double Get_dihedral(double const *a, double const *b, double const *c, double const *d);
@@ -499,9 +499,9 @@ double Get_distance(double const *a, double const *b)
     return Get_vector_length(tmp);
 }
 
-double Get_vector_angle(double const *p, double const *q)
+double Get_vector_angle(double const *a, double const *b)
 {
-    return acos(Get_dot_product(p, q) / (Get_vector_length(p) * Get_vector_length(q))) / M_PI * 180;
+    return acos(Get_dot_product(a, b) / (Get_vector_length(a) * Get_vector_length(b))) / M_PI * 180;
 }
 
 double Get_angle(double const *a, double const *b, double const *c)
