@@ -74,7 +74,7 @@ int main(int argc, char const *argv[])
             puts("when the screen hints you to do so.");
             puts("");
             puts("Exiting normally.");
-            return 0;
+            exit(EXIT_SUCCESS);
         }
         else if (! strcmp(argv[iarg], "-t") || ! strcmp(argv[iarg], "--traj"))
         {
@@ -82,7 +82,7 @@ int main(int argc, char const *argv[])
             if (iarg >= argc)
             {
                 printf("Error! missing argument for \"%s\"\n.", argv[iarg - 1]);
-                exit(1);
+                exit(EXIT_FAILURE);
             }
             strncpy(traj_name, argv[iarg], BUFSIZ + 1);
         }
@@ -92,14 +92,14 @@ int main(int argc, char const *argv[])
             if (iarg >= argc)
             {
                 printf("Error! missing argument for \"%s\"\n.", argv[iarg - 1]);
-                exit(1);
+                exit(EXIT_FAILURE);
             }
             strncpy(index_name, argv[iarg], BUFSIZ + 1);
         }
         else
         {
             printf("Error! Unrecognizable argument: \"%s\"\n", argv[iarg]);
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         ++ iarg;
     }
@@ -107,7 +107,7 @@ int main(int argc, char const *argv[])
     {
         puts("# Input name of the trajectory file:");
         if (! fgets(traj_name, BUFSIZ, stdin))
-            exit(1);
+            exit(EXIT_FAILURE);
         traj_name[strlen(traj_name) - 1] = '\0';
         if (traj_name[0] == '\"')
         {
@@ -119,21 +119,21 @@ int main(int argc, char const *argv[])
         strcmp(traj_name_use + strlen(traj_name_use) - strlen(".xyz"), ".xyz"))
     {
         puts("Error! The suffix of a xyz format trajectory file should be \".xyz\".");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     traj_fp = fopen(traj_name_use, "rt");
     if (! traj_fp)
     {
         puts("Error!");
         perror(traj_name_use);
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     if (! * index_name)
     {
         puts("# Input name of the index file:");
         puts("# If you press <Enter> directly, will read indices from STDIN.");
         if (! fgets(index_name, BUFSIZ, stdin))
-            exit(1);
+            exit(EXIT_FAILURE);
         index_name[strlen(index_name) - 1] = '\0';
         if (index_name[0] == '\"')
         {
@@ -154,7 +154,7 @@ int main(int argc, char const *argv[])
         {
             puts("Error!");
             perror(index_name_use);
-            exit(1);
+            exit(EXIT_FAILURE);
         }
     }
 
@@ -165,7 +165,7 @@ int main(int argc, char const *argv[])
         for (;;)
         {
             if (! fgets(buf, BUFSIZ, stdin))
-                exit(1);
+                exit(EXIT_FAILURE);
             if (sscanf(buf, "%u", & num_paras) == 1)
                 break;
         }
@@ -204,19 +204,19 @@ int main(int argc, char const *argv[])
             if (sscanf(tok, "%u", para_index[i_para]) != 1)
             {
                 printf("Error! Non-blank line %u: the 1st index is not an integer.\n", i_para + 1);
-                exit(1);
+                exit(EXIT_FAILURE);
             }
             tok = strtok(NULL, " \n,");
             /* second index of atom */
             if (! tok)
             {
                 printf("Error! Non-blank line %u: at least 2 indices are required.\n", i_para + 1);
-                exit(1);
+                exit(EXIT_FAILURE);
             }
             if (sscanf(tok, "%u", para_index[i_para] + 1) != 1)
             {
                 printf("Error! Non-blank line %u: the 2nd index is not an integer.\n", i_para + 1);
-                exit(1);
+                exit(EXIT_FAILURE);
             }
             tok = strtok(NULL, " \n,");
             /* third index of atom, optional */
@@ -228,7 +228,7 @@ int main(int argc, char const *argv[])
             if (sscanf(tok, "%u", para_index[i_para] + 2) != 1)
             {
                 printf("Error! Non-blank line %u: the 3rd index is not an integer.\n", i_para + 1);
-                exit(1);
+                exit(EXIT_FAILURE);
             }
             tok = strtok(NULL, " \n,");
             /* fourth index of atom. optional */
@@ -240,14 +240,14 @@ int main(int argc, char const *argv[])
             if (sscanf(tok, "%u", para_index[i_para] + 3) != 1)
             {
                 printf("Error! Non-blank line %u: the 4th index is not an integer.\n", i_para + 1);
-                exit(1);
+                exit(EXIT_FAILURE);
             }
             tok = strtok(NULL, " \n,");
             /* end of indices */
             if (tok)
             {
                 printf("Error! Non-blank line %u: extra non-blank character found.\n", i_para + 1);
-                exit(1);
+                exit(EXIT_FAILURE);
             }
             /* next line */
             ++ i_para;
@@ -308,17 +308,17 @@ int main(int argc, char const *argv[])
     if (! fgets(buf, BUFSIZ, traj_fp))
     {
         puts("Error! Cannot get the first line of trajectory file.");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     if (sscanf(buf, "%u", & num_atoms) != 1)
     {
         puts("Error! Cannot read the amount of atoms from the first line of trajectory file.");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     if (! fgets(buf, BUFSIZ, traj_fp))
     {
         puts("Error! Cannot read the title line in frame 1.");
-        exit(1);
+        exit(EXIT_FAILURE);
     }
 
     /* chech whether indices in index file are out of range. */
@@ -353,13 +353,13 @@ int main(int argc, char const *argv[])
         if (! fgets(buf, BUFSIZ, traj_fp))
         {
             printf("Error! Cannot read atom %u in frame 1.\n", i_atom + 1);
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         tok = strtok(buf, " ");
         if (! tok)
         {
             printf("Error! Cannot get the atom name of atom %u, frame 1.\n", i_atom + 1);
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         if (strlen(tok) >= max_atom_name_space)
         {
@@ -387,30 +387,30 @@ int main(int argc, char const *argv[])
         if (sscanf(buf, "%u", & tmp_uint) != 1)
         {
             printf("Error! Cannot read the amount of atoms from frame %u\n.", i_frame);
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         if (tmp_uint != num_atoms)
         {
             printf("Error! Amount of atoms mismatches in frame %u and frame 1.\n", i_frame);
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         if (! fgets(buf, BUFSIZ, traj_fp))
         {
             printf("Error! Cannot read the title line in frame %u.\n", i_frame);
-            exit(1);
+            exit(EXIT_FAILURE);
         }
         for (i_atom = 0; i_atom < num_atoms; ++ i_atom)
         {
             if (! fgets(buf, BUFSIZ, traj_fp))
             {
                 printf("Error! Cannot read atom %u in frame %u.\n", i_atom + 1, i_frame);
-                exit(1);
+                exit(EXIT_FAILURE);
             }
             tok = strtok(buf, " ");
             if (! tok || sscanf(tok, "%lf", & tmp_double))
             {
                 printf("Error! Cannot read atom %u in frame %u.\n", i_atom + 1, i_frame);
-                exit(1);
+                exit(EXIT_FAILURE);
             }
             if (strlen(tok) >= max_atom_name_space && i_frame > 1)
             {
@@ -422,7 +422,7 @@ int main(int argc, char const *argv[])
             {
                 printf("Error! The name of atom %u in frame %u mismatches that in frame 1.\n", \
                     i_atom + 1, i_frame);
-                exit(1);
+                exit(EXIT_FAILURE);
             }
             for (i_coord = 0; i_coord < num_coords; ++ i_coord)
             {
@@ -431,7 +431,7 @@ int main(int argc, char const *argv[])
                 {
                     printf("Error! Cannot read %c coordinate of atom %u in frame %u.\n", \
                         i_coord ? (i_coord > 1 ? 'z' : 'y') : 'x', i_atom + 1, i_frame);
-                    exit(1);
+                    exit(EXIT_FAILURE);
                 }
             }
         }
