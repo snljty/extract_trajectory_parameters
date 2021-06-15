@@ -9,7 +9,7 @@
 # include <math.h>
 # include <stdbool.h>
 
-# define num_coords 3u
+# define num_coords 3u /* x y z */
 
 void Vector_minus(double const *a, double const *b, double *res);
 double Get_vector_dot_product(double const *a, double const *b);
@@ -19,8 +19,8 @@ double Get_vector_angle(double const *a, double const *b);
 double Get_angle(double const *a, double const *b, double const *c);
 void Vector_cross_product(double const *a, double const *b, double *res);
 double Get_dihedral(double const *a, double const *b, double const *c, double const *d);
-void Output_parameters(unsigned int num_atoms, double const **atom_coords, \
-                       unsigned int num_paras, unsigned int const **para_index);
+void Output_parameters(unsigned int num_atoms, double const *const *atom_coords, \
+                       unsigned int num_paras, unsigned int const *const *para_index);
 
 int main(int argc, char const *argv[])
 {
@@ -42,7 +42,7 @@ int main(int argc, char const *argv[])
     unsigned int i_index = 0u;
     unsigned int i_atom = 0u;
     char **atom_name = NULL;
-    double ** atom_coords = NULL;
+    double **atom_coords = NULL;
     unsigned int const max_atom_name_space = strlen("Bq") + 1u;
     unsigned int i_coord = 0u;
     unsigned int i_frame = 0u;
@@ -437,8 +437,8 @@ int main(int argc, char const *argv[])
         }
 
         /* output geometry parameters of this frame. */
-        Output_parameters(num_atoms, (double const **)atom_coords, num_paras, \
-            (unsigned int const**)para_index);
+        Output_parameters(num_atoms, (double const *const *)atom_coords, num_paras, \
+            (unsigned int const *const *)para_index);
     }
 
     /* release memory */
@@ -552,8 +552,8 @@ double Get_dihedral(double const *a, double const *b, double const *c, double co
     return ret;
 }
 
-void Output_parameters(unsigned int num_atoms, double const **atom_coords, \
-                       unsigned int num_paras, unsigned int const **para_index)
+void Output_parameters(unsigned int num_atoms, double const *const *atom_coords, \
+                       unsigned int num_paras, unsigned int const *const *para_index)
 {
     unsigned int i_para = 0u;
 
