@@ -12,7 +12,7 @@ all: extract_trajectory_parameters
 extract_trajectory_parameters: extract_trajectory_parameters.exe
 
 extract_trajectory_parameters.exe: extract_trajectory_parameters.obj
-	@echo linking $@ againgst $^ ...
+	@echo Linking $@ againgst $^ ...
 	$(CLINKER) -o $@ $^ -static
 
 extract_trajectory_parameters.obj: extract_trajectory_parameters.c

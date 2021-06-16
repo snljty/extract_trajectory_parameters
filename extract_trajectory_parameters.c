@@ -81,7 +81,7 @@ int main(int argc, char const *argv[])
             ++ iarg;
             if (iarg >= argc)
             {
-                printf("Error! missing argument for \"%s\"\n.", argv[iarg - 1]);
+                fprintf(stderr, "Error! missing argument for \"%s\"\n.", argv[iarg - 1]);
                 exit(EXIT_FAILURE);
             }
             strncpy(traj_name, argv[iarg], BUFSIZ + 1);
@@ -91,14 +91,14 @@ int main(int argc, char const *argv[])
             ++ iarg;
             if (iarg >= argc)
             {
-                printf("Error! missing argument for \"%s\"\n.", argv[iarg - 1]);
+                fprintf(stderr, "Error! missing argument for \"%s\"\n.", argv[iarg - 1]);
                 exit(EXIT_FAILURE);
             }
             strncpy(index_name, argv[iarg], BUFSIZ + 1);
         }
         else
         {
-            printf("Error! Unrecognizable argument: \"%s\"\n", argv[iarg]);
+            fprintf(stderr, "Error! Unrecognizable argument: \"%s\"\n", argv[iarg]);
             exit(EXIT_FAILURE);
         }
         ++ iarg;
@@ -118,13 +118,13 @@ int main(int argc, char const *argv[])
     if (strlen(traj_name_use) <= strlen(".xyz") || \
         strcmp(traj_name_use + strlen(traj_name_use) - strlen(".xyz"), ".xyz"))
     {
-        puts("Error! The suffix of a xyz format trajectory file should be \".xyz\".");
+        fprintf(stderr, "Error! The suffix of a xyz format trajectory file should be \".xyz\".\n");
         exit(EXIT_FAILURE);
     }
     traj_fp = fopen(traj_name_use, "rt");
     if (! traj_fp)
     {
-        puts("Error!");
+        fprintf(stderr, "Error!\n");
         perror(traj_name_use);
         exit(EXIT_FAILURE);
     }
@@ -152,7 +152,7 @@ int main(int argc, char const *argv[])
         index_fp = fopen(index_name_use, "rt");
         if (! index_fp)
         {
-            puts("Error!");
+            fprintf(stderr, "Error!\n");
             perror(index_name_use);
             exit(EXIT_FAILURE);
         }
@@ -203,19 +203,19 @@ int main(int argc, char const *argv[])
             /* first index of atom */
             if (sscanf(tok, "%u", para_index[i_para]) != 1)
             {
-                printf("Error! Non-blank line %u: the 1st index is not an integer.\n", i_para + 1);
+                fprintf(stderr, "Error! Non-blank line %u: the 1st index is not an integer.\n", i_para + 1);
                 exit(EXIT_FAILURE);
             }
             tok = strtok(NULL, " \n,");
             /* second index of atom */
             if (! tok)
             {
-                printf("Error! Non-blank line %u: at least 2 indices are required.\n", i_para + 1);
+                fprintf(stderr, "Error! Non-blank line %u: at least 2 indices are required.\n", i_para + 1);
                 exit(EXIT_FAILURE);
             }
             if (sscanf(tok, "%u", para_index[i_para] + 1) != 1)
             {
-                printf("Error! Non-blank line %u: the 2nd index is not an integer.\n", i_para + 1);
+                fprintf(stderr, "Error! Non-blank line %u: the 2nd index is not an integer.\n", i_para + 1);
                 exit(EXIT_FAILURE);
             }
             tok = strtok(NULL, " \n,");
@@ -227,7 +227,7 @@ int main(int argc, char const *argv[])
             }
             if (sscanf(tok, "%u", para_index[i_para] + 2) != 1)
             {
-                printf("Error! Non-blank line %u: the 3rd index is not an integer.\n", i_para + 1);
+                fprintf(stderr, "Error! Non-blank line %u: the 3rd index is not an integer.\n", i_para + 1);
                 exit(EXIT_FAILURE);
             }
             tok = strtok(NULL, " \n,");
@@ -239,14 +239,14 @@ int main(int argc, char const *argv[])
             }
             if (sscanf(tok, "%u", para_index[i_para] + 3) != 1)
             {
-                printf("Error! Non-blank line %u: the 4th index is not an integer.\n", i_para + 1);
+                fprintf(stderr, "Error! Non-blank line %u: the 4th index is not an integer.\n", i_para + 1);
                 exit(EXIT_FAILURE);
             }
             tok = strtok(NULL, " \n,");
             /* end of indices */
             if (tok)
             {
-                printf("Error! Non-blank line %u: extra non-blank character found.\n", i_para + 1);
+                fprintf(stderr, "Error! Non-blank line %u: extra non-blank character found.\n", i_para + 1);
                 exit(EXIT_FAILURE);
             }
             /* next line */
@@ -307,17 +307,17 @@ int main(int argc, char const *argv[])
     /* the amount of atoms and their types are assumed to be unique in any frames. */
     if (! fgets(buf, BUFSIZ, traj_fp))
     {
-        puts("Error! Cannot get the first line of trajectory file.");
+        fprintf(stderr, "Error! Cannot get the first line of trajectory file.\n");
         exit(EXIT_FAILURE);
     }
     if (sscanf(buf, "%u", & num_atoms) != 1)
     {
-        puts("Error! Cannot read the amount of atoms from the first line of trajectory file.");
+        fprintf(stderr, "Error! Cannot read the amount of atoms from the first line of trajectory file.\n");
         exit(EXIT_FAILURE);
     }
     if (! fgets(buf, BUFSIZ, traj_fp))
     {
-        puts("Error! Cannot read the title line in frame 1.");
+        fprintf(stderr, "Error! Cannot read the title line in frame 1.\n");
         exit(EXIT_FAILURE);
     }
 
@@ -328,9 +328,10 @@ int main(int argc, char const *argv[])
         {
             if (para_index[i_para][i_index] > num_atoms)
             {
-                printf("Error! Index %u of non-blank line %u in index file is larger than ", \
+                fprintf(stderr, "Error! Index %u of non-blank line %u in index file is larger than ", \
                     i_index + 1, i_para + 1);
-                puts("total amount of atoms.");
+                fprintf(stderr, "total amount of atoms.\n");
+                exit(EXIT_FAILURE);
             }
         }
 
@@ -352,13 +353,13 @@ int main(int argc, char const *argv[])
     {
         if (! fgets(buf, BUFSIZ, traj_fp))
         {
-            printf("Error! Cannot read atom %u in frame 1.\n", i_atom + 1);
+            fprintf(stderr, "Error! Cannot read atom %u in frame 1.\n", i_atom + 1);
             exit(EXIT_FAILURE);
         }
         tok = strtok(buf, " ");
         if (! tok)
         {
-            printf("Error! Cannot get the atom name of atom %u, frame 1.\n", i_atom + 1);
+            fprintf(stderr, "Error! Cannot get the atom name of atom %u, frame 1.\n", i_atom + 1);
             exit(EXIT_FAILURE);
         }
         if (strlen(tok) >= max_atom_name_space)
@@ -386,30 +387,30 @@ int main(int argc, char const *argv[])
         ++ i_frame;
         if (sscanf(buf, "%u", & tmp_uint) != 1)
         {
-            printf("Error! Cannot read the amount of atoms from frame %u\n.", i_frame);
+            fprintf(stderr, "Error! Cannot read the amount of atoms from frame %u\n.", i_frame);
             exit(EXIT_FAILURE);
         }
         if (tmp_uint != num_atoms)
         {
-            printf("Error! Amount of atoms mismatches in frame %u and frame 1.\n", i_frame);
+            fprintf(stderr, "Error! Amount of atoms mismatches in frame %u and frame 1.\n", i_frame);
             exit(EXIT_FAILURE);
         }
         if (! fgets(buf, BUFSIZ, traj_fp))
         {
-            printf("Error! Cannot read the title line in frame %u.\n", i_frame);
+            fprintf(stderr, "Error! Cannot read the title line in frame %u.\n", i_frame);
             exit(EXIT_FAILURE);
         }
         for (i_atom = 0; i_atom < num_atoms; ++ i_atom)
         {
             if (! fgets(buf, BUFSIZ, traj_fp))
             {
-                printf("Error! Cannot read atom %u in frame %u.\n", i_atom + 1, i_frame);
+                fprintf(stderr, "Error! Cannot read atom %u in frame %u.\n", i_atom + 1, i_frame);
                 exit(EXIT_FAILURE);
             }
             tok = strtok(buf, " ");
             if (! tok || sscanf(tok, "%lf", & tmp_double))
             {
-                printf("Error! Cannot read atom %u in frame %u.\n", i_atom + 1, i_frame);
+                fprintf(stderr, "Error! Cannot read atom %u in frame %u.\n", i_atom + 1, i_frame);
                 exit(EXIT_FAILURE);
             }
             if (strlen(tok) >= max_atom_name_space && i_frame > 1)
@@ -420,7 +421,7 @@ int main(int argc, char const *argv[])
             }
             if (strncmp(tok, atom_name[i_atom], max_atom_name_space))
             {
-                printf("Error! The name of atom %u in frame %u mismatches that in frame 1.\n", \
+                fprintf(stderr, "Error! The name of atom %u in frame %u mismatches that in frame 1.\n", \
                     i_atom + 1, i_frame);
                 exit(EXIT_FAILURE);
             }
@@ -429,7 +430,7 @@ int main(int argc, char const *argv[])
                 tok = strtok(NULL, " ");
                 if (! tok || sscanf(tok, "%lf", atom_coords[i_atom] + i_coord) != 1)
                 {
-                    printf("Error! Cannot read %c coordinate of atom %u in frame %u.\n", \
+                    fprintf(stderr, "Error! Cannot read %c coordinate of atom %u in frame %u.\n", \
                         i_coord ? (i_coord > 1 ? 'z' : 'y') : 'x', i_atom + 1, i_frame);
                     exit(EXIT_FAILURE);
                 }
