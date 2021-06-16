@@ -19,18 +19,20 @@ double Get_vector_angle(double const *a, double const *b);
 double Get_angle(double const *a, double const *b, double const *c);
 void Vector_cross_product(double const *a, double const *b, double *res);
 double Get_dihedral(double const *a, double const *b, double const *c, double const *d);
-void Output_parameters(unsigned int num_atoms, double const *const *atom_coords, \
+void Output_parameters(FILE *out_file_ptr, unsigned int num_atoms, double const *const *atom_coords, \
                        unsigned int num_paras, unsigned int const *const *para_index);
 
 int main(int argc, char const *argv[])
 {
     int iarg = 0;
-    char traj_name[BUFSIZ + 1] = "";
-    char index_name[BUFSIZ + 1] = "";
+    char traj_name[BUFSIZ + 1] = {'\0'};
+    char index_name[BUFSIZ + 1] = {'\0'};
     char *traj_name_use = traj_name;
     char *index_name_use = index_name;
+    char output_name[BUFSIZ + 1] = {'\0'};
     FILE *traj_fp = NULL;
     FILE *index_fp = NULL;
+    FILE *output_fp = stdout;
     unsigned int num_paras = 0u;
     char buf[BUFSIZ + 1] = "";
     char *tok = NULL;
@@ -57,21 +59,23 @@ int main(int argc, char const *argv[])
         if (! strcmp(argv[iarg], "-h") || ! strcmp(argv[iarg], "--help") || ! strcmp(argv[iarg], "/?"))
         {
             printf("Usage: %s [-h | --help]\n", argv[0]);
-            printf("       %s [-t | --traj TRAJ] [-i | --index INDEX]\n", argv[0]);
+            printf("       %s [-t | --traj TRAJ] [-i | --index INDEX] [-o | --output OUTPUT]\n", argv[0]);
             puts("");
             puts("TRAJ: name of a xyz format trajectory file with multi frames.");
             puts("INDEX: name of an index file.");
+            puts("OUTPUT: name of file for output.");
             puts("");
             puts("The index file should contains several lines, each line contains 2 to 4 integers.");
             puts("Those integers are the indices of the atoms, if 2 integers are provided, the ");
             puts("bond length of these two atoms will be calcualted, with the unit of input, ");
             puts("3 or 4 integers stands for angle (degree) and dihedral angle (degree).");
             puts("");
-            puts("All file names that are not provided in the command argument, ");
-            puts("will be asked interactively.");
+            puts("If either TRAJ or INDEX is omitted in the command arguments, ");
+            puts("it will be asked interactively.");
             puts("If INDEX is \"-\", the program will read indices from STDIN.");
-            puts("In this mode, you need to input the amount of parameters ro be measured first, ");
+            puts("In this mode, you need to input the amount of parameters to be measured first, ");
             puts("when the screen hints you to do so.");
+            puts("If OUTPUT is omitted in the command arguments or it is \"-\", stdout will be used.");
             puts("");
             puts("Exiting normally.");
             exit(EXIT_SUCCESS);
@@ -95,6 +99,16 @@ int main(int argc, char const *argv[])
                 exit(EXIT_FAILURE);
             }
             strncpy(index_name, argv[iarg], BUFSIZ + 1);
+        }
+        else if (! strcmp(argv[iarg], "-o") || ! strcmp(argv[iarg], "--output"))
+        {
+            ++ iarg;
+            if (iarg >= argc)
+            {
+                fprintf(stderr, "Error! missing argument for \"%s\"\n.", argv[iarg - 1]);
+                exit(EXIT_FAILURE);
+            }
+            strncpy(output_name, argv[iarg], BUFSIZ + 1);
         }
         else
         {
@@ -144,7 +158,7 @@ int main(int argc, char const *argv[])
     if (! * index_name_use || ! strncmp(index_name_use, "-", strlen("-") + 1))
     {
         read_indices_from_stdin = true;
-        puts("# Reading indices from STDIN, please input ...");
+        puts("# Reading indices from STDIN ...");
         index_fp = stdin;
     }
     else
@@ -156,6 +170,21 @@ int main(int argc, char const *argv[])
             perror(index_name_use);
             exit(EXIT_FAILURE);
         }
+    }
+    if (! * output_name || ! strcmp(output_name, "-"))
+        output_fp = stdout;
+    else
+    {
+        output_fp = fopen(output_name, "rt");
+        if (output_fp)
+        {
+            fclose(output_fp);
+            output_fp = NULL;
+            fprintf(stderr, "Error! File \"%s\" already exists.", output_name);
+            exit(EXIT_FAILURE);
+        }
+        fclose(output_fp);
+        output_fp = fopen(output_name, "wt");
     }
 
     /* get amount of parameters */
@@ -262,19 +291,19 @@ int main(int argc, char const *argv[])
     }
 
     /* print title line of output parameters */
-    puts("# bond lengthes in input unit, angles and dihedrals in unit degree.");
-    printf("# ");
+    fprintf(output_fp, "# bond lengthes in input unit, angles and dihedrals in unit degree.\n");
+    fprintf(output_fp, "# ");
     for (i_para = 0; i_para < num_paras; ++ i_para)
     {
         if (i_para)
-            printf("%4s", "");
+            fprintf(output_fp, "%4s", "");
         if (para_index[i_para][3])
         {
             /* dihedral */
             sprintf(tmp_str, "%u-%u-%u-%u", para_index[i_para][0], para_index[i_para][1], \
                 para_index[i_para][2], para_index[i_para][3]);
             tmp_uint = strlen(tmp_str);
-            printf("%*s%*s%*s", (15 - tmp_uint) / 2 >= 0 ? (15 - tmp_uint) / 2 : 0, "", \
+            fprintf(output_fp, "%*s%*s%*s", (15 - tmp_uint) / 2 >= 0 ? (15 - tmp_uint) / 2 : 0, "", \
                 tmp_uint, tmp_str, \
                 (16 - tmp_uint) / 2 >= 0 ? (16 - tmp_uint) / 2 : 0, "");
         }
@@ -286,7 +315,7 @@ int main(int argc, char const *argv[])
                 sprintf(tmp_str, "%u-%u-%u", para_index[i_para][0], \
                     para_index[i_para][1], para_index[i_para][2]);
                 tmp_uint = strlen(tmp_str);
-                printf("%*s%*s%*s", (15 - tmp_uint) / 2 >= 0 ? (15 - tmp_uint) / 2 : 0, "", \
+                fprintf(output_fp, "%*s%*s%*s", (15 - tmp_uint) / 2 >= 0 ? (15 - tmp_uint) / 2 : 0, "", \
                     tmp_uint, tmp_str, \
                     (16 - tmp_uint) / 2 >= 0 ? (16 - tmp_uint) / 2 : 0, "");
             }
@@ -295,13 +324,13 @@ int main(int argc, char const *argv[])
                 /* length */
                 sprintf(tmp_str, "%u-%u", para_index[i_para][0], para_index[i_para][1]);
                 tmp_uint = strlen(tmp_str);
-                printf("%*s%*s%*s", (15 - tmp_uint) / 2 >= 0 ? (15 - tmp_uint) / 2 : 0, "", \
+                fprintf(output_fp, "%*s%*s%*s", (15 - tmp_uint) / 2 >= 0 ? (15 - tmp_uint) / 2 : 0, "", \
                         tmp_uint, tmp_str, \
                         (16 - tmp_uint) / 2 >= 0 ? (16 - tmp_uint) / 2 : 0, "");
             }
         }
     }
-    puts("");
+    fprintf(output_fp, "\n");
 
     /*  get number of atoms */
     /* the amount of atoms and their types are assumed to be unique in any frames. */
@@ -438,7 +467,7 @@ int main(int argc, char const *argv[])
         }
 
         /* output geometry parameters of this frame. */
-        Output_parameters(num_atoms, (double const *const *)atom_coords, num_paras, \
+        Output_parameters(output_fp, num_atoms, (double const *const *)atom_coords, num_paras, \
             (unsigned int const *const *)para_index);
     }
 
@@ -459,6 +488,13 @@ int main(int argc, char const *argv[])
     /* close trajectory file */
     fclose(traj_fp);
     traj_fp = NULL;
+
+    /* close output file if needed */
+    if (* output_name && strcmp(output_name, "-"))
+    {
+        fclose(output_fp);
+        output_fp = NULL;
+    }
 
     return 0;
 }
@@ -553,42 +589,42 @@ double Get_dihedral(double const *a, double const *b, double const *c, double co
     return ret;
 }
 
-void Output_parameters(unsigned int num_atoms, double const *const *atom_coords, \
+void Output_parameters(FILE *out_file_ptr, unsigned int num_atoms, double const *const *atom_coords, \
                        unsigned int num_paras, unsigned int const *const *para_index)
 {
     unsigned int i_para = 0u;
 
-    printf("%4s", "");
+    fprintf(out_file_ptr, "%4s", "");
     for (i_para = 0u; i_para < num_paras; ++ i_para)
     {
         if (i_para)
-            printf("%9s", "");
+            fprintf(out_file_ptr, "%9s", "");
         if (para_index[i_para][3])
         {
             /* dihedral */
-            printf("%10.5lf", Get_dihedral(atom_coords[para_index[i_para][0] - 1], \
-                                           atom_coords[para_index[i_para][1] - 1], \
-                                           atom_coords[para_index[i_para][2] - 1], \
-                                           atom_coords[para_index[i_para][3] - 1]));
+            fprintf(out_file_ptr, "%10.5lf", Get_dihedral(atom_coords[para_index[i_para][0] - 1], \
+                                                          atom_coords[para_index[i_para][1] - 1], \
+                                                          atom_coords[para_index[i_para][2] - 1], \
+                                                          atom_coords[para_index[i_para][3] - 1]));
         }
         else
         {
             if (para_index[i_para][2])
             {
                 /* angle */
-                printf("%10.5lf", Get_angle(atom_coords[para_index[i_para][0] - 1], \
-                                            atom_coords[para_index[i_para][1] - 1], \
-                                            atom_coords[para_index[i_para][2] - 1]));
+                fprintf(out_file_ptr, "%10.5lf", Get_angle(atom_coords[para_index[i_para][0] - 1], \
+                                                           atom_coords[para_index[i_para][1] - 1], \
+                                                           atom_coords[para_index[i_para][2] - 1]));
             }
             else
             {
                 /* length */
-                printf("%10.6lf", Get_distance(atom_coords[para_index[i_para][0] - 1], \
-                                               atom_coords[para_index[i_para][1] - 1]));
+                fprintf(out_file_ptr, "%10.6lf", Get_distance(atom_coords[para_index[i_para][0] - 1], \
+                                                              atom_coords[para_index[i_para][1] - 1]));
             }
         }
     }
-    puts("");
+    fprintf(out_file_ptr, "\n");
 
     return;
 }
