@@ -180,10 +180,9 @@ int main(int argc, char const *argv[])
         {
             fclose(output_fp);
             output_fp = NULL;
-            fprintf(stderr, "Error! File \"%s\" already exists.", output_name);
+            fprintf(stderr, "Error! File \"%s\" already exists.\n", output_name);
             exit(EXIT_FAILURE);
         }
-        fclose(output_fp);
         output_fp = fopen(output_name, "wt");
     }
 
