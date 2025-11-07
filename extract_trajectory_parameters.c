@@ -11,6 +11,7 @@
 
 # define num_coords 3u /* x y z */
 
+double Radian_to_degree(double r);
 void Vector_minus(double const *a, double const *b, double *res);
 double Get_vector_dot_product(double const *a, double const *b);
 double Get_vector_length(double const *a);
@@ -535,7 +536,12 @@ int main(int argc, char const **argv)
     return 0;
 }
 
-/* note: below double * if a double[num_coords] */
+/* note: below double * is a double[num_coords] */
+
+inline double Radian_to_degree(double r)
+{
+    return r / M_PI * 180;
+}
 
 void Vector_minus(double const *a, double const *b, double *res)
 {
@@ -578,7 +584,7 @@ double Get_distance(double const *a, double const *b)
 
 double Get_vector_angle(double const *a, double const *b)
 {
-    return acos(Get_vector_dot_product(a, b) / (Get_vector_length(a) * Get_vector_length(b))) / M_PI * 180;
+    return Radian_to_degree(acos(Get_vector_dot_product(a, b) / (Get_vector_length(a) * Get_vector_length(b))));
 }
 
 double Get_angle(double const *a, double const *b, double const *c)
@@ -613,17 +619,21 @@ double Get_dihedral(double const *a, double const *b, double const *c, double co
     double tmp_1[num_coords] = {0.0};
     double tmp_2[num_coords] = {0.0};
     double tmp_3[num_coords] = {0.0};
-    double tmp_p[num_coords] = {0.0};
-    double tmp_q[num_coords] = {0.0};
-    double ret = 0.0;
+    double n_1[num_coords] = {0.0};
+    double n_2[num_coords] = {0.0};
+    double m[num_coords] = {0.0};
+    double x, y;
 
     Vector_minus(b, a, tmp_1);
-    Vector_minus(b, c, tmp_2);
-    Vector_minus(c, d, tmp_3);
-    Vector_cross_product(tmp_1, tmp_2, tmp_p);
-    Vector_cross_product(tmp_3, tmp_2, tmp_q);
-    ret = Get_vector_angle(tmp_p, tmp_q);
-    return Get_vector_dot_product(tmp_p, tmp_3) < 0.0 ? - ret : ret;
+    Vector_minus(c, b, tmp_2);
+    Vector_minus(d, c, tmp_3);
+    Vector_cross_product(tmp_1, tmp_2, n_1);
+    Vector_cross_product(tmp_2, tmp_3, n_2);
+    Vector_cross_product(n_1, n_2, m);
+    y = Get_vector_dot_product(m, tmp_2) / Get_vector_length(tmp_2);
+    x = Get_vector_dot_product(n_1, n_2);
+
+    return Radian_to_degree(atan2(y, x));
 }
 
 void Output_parameters(FILE *out_file_ptr, unsigned int num_atoms, double const *const *atom_coords, \

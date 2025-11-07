@@ -1,3 +1,5 @@
 *.o
 *.obj
 Makefile.Linux
+*.exe
+*.x
