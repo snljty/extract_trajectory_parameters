@@ -7,6 +7,7 @@
 # include <stdlib.h>
 # include <string.h>
 # include <math.h>
+# include <float.h>
 # include <stdbool.h>
 
 # define num_coords 3u /* x y z */
@@ -15,6 +16,7 @@ double Radian_to_degree(double r);
 void Vector_minus(double const *a, double const *b, double *res);
 double Get_vector_dot_product(double const *a, double const *b);
 double Get_vector_length(double const *a);
+void Normalize_vector(double *a);
 double Get_distance(double const *a, double const *b);
 double Get_vector_angle(double const *a, double const *b);
 double Get_angle(double const *a, double const *b, double const *c);
@@ -49,9 +51,9 @@ int main(int argc, char const **argv)
     unsigned int const max_atom_name_space = strlen("Bq") + 1u;
     unsigned int i_coord = 0u;
     unsigned int i_frame = 0u;
-    double tmp_double = 0.0;
-    unsigned int tmp_uint = 0u;
-    char tmp_str[24] = "";
+    double v_double = 0.0;
+    unsigned int v_uint = 0u;
+    char v_str[24] = "";
 
     /* Get file names and open files */
     iarg = 1;
@@ -326,12 +328,12 @@ int main(int argc, char const **argv)
         if (para_index[i_para][3])
         {
             /* dihedral */
-            sprintf(tmp_str, "%u-%u-%u-%u", para_index[i_para][0], para_index[i_para][1], \
+            sprintf(v_str, "%u-%u-%u-%u", para_index[i_para][0], para_index[i_para][1], \
                 para_index[i_para][2], para_index[i_para][3]);
-            tmp_uint = strlen(tmp_str);
-            fprintf(output_fp, "%*s%*s%*s", (15 - tmp_uint) / 2 >= 0 ? (15 - tmp_uint) / 2 : 0, "", \
-                tmp_uint, tmp_str, \
-                (16 - tmp_uint) / 2 >= 0 ? (16 - tmp_uint) / 2 : 0, "");
+            v_uint = strlen(v_str);
+            fprintf(output_fp, "%*s%*s%*s", (15 - v_uint) / 2 >= 0 ? (15 - v_uint) / 2 : 0, "", \
+                v_uint, v_str, \
+                (16 - v_uint) / 2 >= 0 ? (16 - v_uint) / 2 : 0, "");
             fflush(output_fp);
 
         }
@@ -340,22 +342,22 @@ int main(int argc, char const **argv)
             if (para_index[i_para][2])
             {
                 /* angle */
-                sprintf(tmp_str, "%u-%u-%u", para_index[i_para][0], \
+                sprintf(v_str, "%u-%u-%u", para_index[i_para][0], \
                     para_index[i_para][1], para_index[i_para][2]);
-                tmp_uint = strlen(tmp_str);
-                fprintf(output_fp, "%*s%*s%*s", (15 - tmp_uint) / 2 >= 0 ? (15 - tmp_uint) / 2 : 0, "", \
-                    tmp_uint, tmp_str, \
-                    (16 - tmp_uint) / 2 >= 0 ? (16 - tmp_uint) / 2 : 0, "");
+                v_uint = strlen(v_str);
+                fprintf(output_fp, "%*s%*s%*s", (15 - v_uint) / 2 >= 0 ? (15 - v_uint) / 2 : 0, "", \
+                    v_uint, v_str, \
+                    (16 - v_uint) / 2 >= 0 ? (16 - v_uint) / 2 : 0, "");
                 fflush(output_fp);
             }
             else
             {
                 /* length */
-                sprintf(tmp_str, "%u-%u", para_index[i_para][0], para_index[i_para][1]);
-                tmp_uint = strlen(tmp_str);
-                fprintf(output_fp, "%*s%*s%*s", (15 - tmp_uint) / 2 >= 0 ? (15 - tmp_uint) / 2 : 0, "", \
-                    tmp_uint, tmp_str, \
-                    (16 - tmp_uint) / 2 >= 0 ? (16 - tmp_uint) / 2 : 0, "");
+                sprintf(v_str, "%u-%u", para_index[i_para][0], para_index[i_para][1]);
+                v_uint = strlen(v_str);
+                fprintf(output_fp, "%*s%*s%*s", (15 - v_uint) / 2 >= 0 ? (15 - v_uint) / 2 : 0, "", \
+                    v_uint, v_str, \
+                    (16 - v_uint) / 2 >= 0 ? (16 - v_uint) / 2 : 0, "");
                 fflush(output_fp);
             }
         }
@@ -451,12 +453,12 @@ int main(int argc, char const **argv)
             break;
         }
         ++ i_frame;
-        if (sscanf(buf, "%u", & tmp_uint) != 1)
+        if (sscanf(buf, "%u", & v_uint) != 1)
         {
             fprintf(stderr, "Error! Cannot read the amount of atoms from frame %u\n.", i_frame);
             exit(EXIT_FAILURE);
         }
-        if (tmp_uint != num_atoms)
+        if (v_uint != num_atoms)
         {
             fprintf(stderr, "Error! Amount of atoms mismatches in frame %u and frame 1.\n", i_frame);
             exit(EXIT_FAILURE);
@@ -474,7 +476,7 @@ int main(int argc, char const **argv)
                 exit(EXIT_FAILURE);
             }
             tok = strtok(buf, " ");
-            if (! tok || sscanf(tok, "%lf", & tmp_double))
+            if (! tok || sscanf(tok, "%lf", & v_double))
             {
                 fprintf(stderr, "Error! Cannot read atom %u in frame %u.\n", i_atom + 1, i_frame);
                 exit(EXIT_FAILURE);
@@ -560,7 +562,6 @@ double Get_vector_dot_product(double const *a, double const *b)
     unsigned int i = 0u;
     double ret = 0.0;
 
-    ret = 0.0;
     for (i = 0u; i < num_coords; ++ i)
     {
         ret += a[i] * b[i];
@@ -574,12 +575,25 @@ double Get_vector_length(double const *a)
     return sqrt(Get_vector_dot_product(a, a));
 }
 
+void Normalize_vector(double *a)
+{
+    unsigned int i = 0u;
+    double vec_len = Get_vector_length(a);
+
+    for (i = 0u; i < num_coords; ++ i)
+    {
+        a[i] /= vec_len;
+    }
+
+    return;
+}
+
 double Get_distance(double const *a, double const *b)
 {
-    double tmp[num_coords] = {0.0};
+    double v[num_coords] = {0.0};
 
-    Vector_minus(b, a, tmp);
-    return Get_vector_length(tmp);
+    Vector_minus(b, a, v);
+    return Get_vector_length(v);
 }
 
 double Get_vector_angle(double const *a, double const *b)
@@ -589,13 +603,13 @@ double Get_vector_angle(double const *a, double const *b)
 
 double Get_angle(double const *a, double const *b, double const *c)
 {
-    double tmp_1[num_coords] = {0.0};
-    double tmp_2[num_coords] = {0.0};
+    double v_1[num_coords] = {0.0};
+    double v_2[num_coords] = {0.0};
 
-    Vector_minus(b, a, tmp_1);
-    Vector_minus(b, c, tmp_2);
+    Vector_minus(b, a, v_1);
+    Vector_minus(b, c, v_2);
 
-    return Get_vector_angle(tmp_1, tmp_2);
+    return Get_vector_angle(v_1, v_2);
 }
 
 void Vector_cross_product(double const *a, double const *b, double *res)
@@ -616,22 +630,42 @@ void Vector_cross_product(double const *a, double const *b, double *res)
 
 double Get_dihedral(double const *a, double const *b, double const *c, double const *d)
 {
-    double tmp_1[num_coords] = {0.0};
-    double tmp_2[num_coords] = {0.0};
-    double tmp_3[num_coords] = {0.0};
+    double v_1[num_coords] = {0.0};
+    double v_2[num_coords] = {0.0};
+    double v_3[num_coords] = {0.0};
     double n_1[num_coords] = {0.0};
     double n_2[num_coords] = {0.0};
     double m[num_coords] = {0.0};
-    double x, y;
+    double x = 0.0, y = 0.0;
 
-    Vector_minus(b, a, tmp_1);
-    Vector_minus(c, b, tmp_2);
-    Vector_minus(d, c, tmp_3);
-    Vector_cross_product(tmp_1, tmp_2, n_1);
-    Vector_cross_product(tmp_2, tmp_3, n_2);
+    Vector_minus(b, a, v_1);
+    Vector_minus(c, b, v_2);
+    Vector_minus(d, c, v_3);
+
+    Normalize_vector(v_1);
+    Normalize_vector(v_2);
+    Normalize_vector(v_3);
+
+    Vector_cross_product(v_1, v_2, n_1);
+    Vector_cross_product(v_2, v_3, n_2);
+
+    if (Get_vector_length(n_1) <= DBL_EPSILON * 1.E3 || \
+        Get_vector_length(n_2) <= DBL_EPSILON * 1.E3)
+    {
+        /* a-b-c or b-c-d is collinear */
+        return (double)NAN;
+    }
+
     Vector_cross_product(n_1, n_2, m);
-    y = Get_vector_dot_product(m, tmp_2) / Get_vector_length(tmp_2);
+    y = Get_vector_dot_product(m, v_2);
+    /* y /= Get_vector_length(v_2); */ /* if v_2 was not normalized then this is needed */
     x = Get_vector_dot_product(n_1, n_2);
+
+    if (fabs(x) <= DBL_EPSILON * 1.E3 && fabs(y) <= DBL_EPSILON * 1.E3)
+    {
+        /* arctan2(0, 0) is not defined */
+        return (double)NAN;
+    }
 
     return Radian_to_degree(atan2(y, x));
 }
@@ -664,7 +698,7 @@ void Output_parameters(FILE *out_file_ptr, unsigned int num_atoms, double const 
             if (para_index[i_para][2])
             {
                 /* angle */
-                fprintf(out_file_ptr, "%10.5lf", Get_angle(atom_coords[para_index[i_para][0] - 1], \
+                fprintf(out_file_ptr, " %9.5lf", Get_angle(atom_coords[para_index[i_para][0] - 1], \
                                                            atom_coords[para_index[i_para][1] - 1], \
                                                            atom_coords[para_index[i_para][2] - 1]));
                 fflush(out_file_ptr);
