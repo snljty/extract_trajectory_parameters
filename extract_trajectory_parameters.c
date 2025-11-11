@@ -91,7 +91,7 @@ int main(int argc, char const **argv)
             ++ iarg;
             if (iarg >= argc)
             {
-                fprintf(stderr, "Error! missing argument for \"%s\"\n.", argv[iarg - 1]);
+                fprintf(stderr, "Error! missing argument for \"%s\".\n", argv[iarg - 1]);
                 exit(EXIT_FAILURE);
             }
             strncpy(traj_name, argv[iarg], BUFSIZ + 1);
@@ -101,7 +101,7 @@ int main(int argc, char const **argv)
             ++ iarg;
             if (iarg >= argc)
             {
-                fprintf(stderr, "Error! missing argument for \"%s\"\n.", argv[iarg - 1]);
+                fprintf(stderr, "Error! missing argument for \"%s\".\n", argv[iarg - 1]);
                 exit(EXIT_FAILURE);
             }
             strncpy(index_name, argv[iarg], BUFSIZ + 1);
@@ -111,7 +111,7 @@ int main(int argc, char const **argv)
             ++ iarg;
             if (iarg >= argc)
             {
-                fprintf(stderr, "Error! missing argument for \"%s\"\n.", argv[iarg - 1]);
+                fprintf(stderr, "Error! missing argument for \"%s\".\n", argv[iarg - 1]);
                 exit(EXIT_FAILURE);
             }
             strncpy(output_name, argv[iarg], BUFSIZ + 1);
@@ -453,7 +453,7 @@ int main(int argc, char const **argv)
         ++ i_frame;
         if (sscanf(buf, "%u", & v_uint) != 1)
         {
-            fprintf(stderr, "Error! Cannot read the amount of atoms from frame %u\n.", i_frame);
+            fprintf(stderr, "Error! Cannot read the amount of atoms from frame %u.\n", i_frame);
             exit(EXIT_FAILURE);
         }
         if (v_uint != num_atoms)
