@@ -17,7 +17,7 @@ extract_trajectory_parameters.exe: extract_trajectory_parameters.obj
 
 extract_trajectory_parameters.obj: extract_trajectory_parameters.c
 	@echo Compiling $@ ...
-	$(CC) -o $@ -c $< $(CCFLAGS) -s
+	$(CC) -o $@ -c $< $(CCFLAGS) -g0
 
 .PHONY: veryclean
 veryclean: clean
