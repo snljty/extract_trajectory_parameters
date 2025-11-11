@@ -91,7 +91,7 @@ int main(int argc, char const **argv)
             ++ iarg;
             if (iarg >= argc)
             {
-                fprintf(stderr, "Error! missing argument for \"%s\".\n", argv[iarg - 1]);
+                fprintf(stderr, "Error! Missing argument for \"%s\".\n", argv[iarg - 1]);
                 exit(EXIT_FAILURE);
             }
             strncpy(traj_name, argv[iarg], BUFSIZ + 1);
@@ -101,7 +101,7 @@ int main(int argc, char const **argv)
             ++ iarg;
             if (iarg >= argc)
             {
-                fprintf(stderr, "Error! missing argument for \"%s\".\n", argv[iarg - 1]);
+                fprintf(stderr, "Error! Missing argument for \"%s\".\n", argv[iarg - 1]);
                 exit(EXIT_FAILURE);
             }
             strncpy(index_name, argv[iarg], BUFSIZ + 1);
@@ -111,7 +111,7 @@ int main(int argc, char const **argv)
             ++ iarg;
             if (iarg >= argc)
             {
-                fprintf(stderr, "Error! missing argument for \"%s\".\n", argv[iarg - 1]);
+                fprintf(stderr, "Error! Missing argument for \"%s\".\n", argv[iarg - 1]);
                 exit(EXIT_FAILURE);
             }
             strncpy(output_name, argv[iarg], BUFSIZ + 1);
