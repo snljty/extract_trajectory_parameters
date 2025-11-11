@@ -118,7 +118,7 @@ int main(int argc, char const **argv)
         }
         else
         {
-            fprintf(stderr, "Error! Unrecognizable argument: \"%s\"\n", argv[iarg]);
+            fprintf(stderr, "Error! Unrecognizable argument: \"%s\".\n", argv[iarg]);
             exit(EXIT_FAILURE);
         }
         ++ iarg;
