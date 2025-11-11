@@ -56,8 +56,7 @@ int main(int argc, char const **argv)
     char v_str[24] = "";
 
     /* Get file names and open files */
-    iarg = 1;
-    while (iarg < argc)
+    for (iarg = 1; iarg < argc; ++ iarg)
     {
         if (! strcmp(argv[iarg], "-h") || ! strcmp(argv[iarg], "--help") || ! strcmp(argv[iarg], "/?"))
         {
@@ -81,10 +80,13 @@ int main(int argc, char const **argv)
             printf("%s\n", "If OUTPUT is omitted in the command arguments or it is \"-\", stdout will be used.");
             printf("%s\n", "");
             printf("%s\n", "Exiting normally.");
-            fflush(stdout);
             exit(EXIT_SUCCESS);
         }
-        else if (! strcmp(argv[iarg], "-t") || ! strcmp(argv[iarg], "--traj"))
+    }
+    iarg = 1;
+    while (iarg < argc)
+    {
+        if (! strcmp(argv[iarg], "-t") || ! strcmp(argv[iarg], "--traj"))
         {
             ++ iarg;
             if (iarg >= argc)
@@ -220,7 +222,6 @@ int main(int argc, char const **argv)
         {
             printf("# Input %u lines of indices, one line for one geometry parameter:\n", num_paras);
         }
-        fflush(stdout);
     }
     else
     {
@@ -315,7 +316,6 @@ int main(int argc, char const **argv)
 
     /* print title line of output parameters */
     fprintf(output_fp, "# bond lengthes in input unit, angles and dihedrals in unit degree.\n");
-    fflush(output_fp);
     fprintf(output_fp, "# ");
     fflush(output_fp);
     for (i_para = 0; i_para < num_paras; ++ i_para)
@@ -335,7 +335,6 @@ int main(int argc, char const **argv)
                 v_uint, v_str, \
                 (16 - v_uint) / 2 >= 0 ? (16 - v_uint) / 2 : 0, "");
             fflush(output_fp);
-
         }
         else
         {
@@ -363,7 +362,6 @@ int main(int argc, char const **argv)
         }
     }
     fprintf(output_fp, "\n");
-    fflush(output_fp);
 
     /*  get number of atoms */
     /* the amount of atoms and their types are assumed to be unique in any frames. */
@@ -713,7 +711,6 @@ void Output_parameters(FILE *out_file_ptr, unsigned int num_atoms, double const 
         }
     }
     fprintf(out_file_ptr, "\n");
-    fflush(out_file_ptr);
 
     return;
 }
